@@ -12,22 +12,31 @@
         http://www.springframework.org/schema/util/spring-util-3.2.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-3.2.xsd">
-        
-        
-   <!-- Different way to define PropertyPlaceholderConfigurer :) -->
-   <context:property-placeholder location="${CLIENT_PROPS:classpath:client.properties}, 
-                                           ${DB_PROPS:classpath:db.properties}"
-        system-properties-mode="OVERRIDE" ignore-resource-not-found="false"/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:client.properties</value>
+                <value>classpath:db.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+    </bean>
 
     <bean id="client" class="com.yet.spring.core.beans.Client"
-        p:greeting="${greeting}">
+        p:greeting="${greeting}"
+        p:city="${city}">
         <constructor-arg index="0" value="${id}" />
         <constructor-arg value="${name}" />
     </bean>
 
     <util:map id="loggerMap">
+        <entry key="DEBUG" value-ref="consoleEventLogger" />
         <entry key="INFO" value-ref="consoleEventLogger" />
+        <entry key="WARN" value-ref="fileEventLogger" />
         <entry key="ERROR" value-ref="combinedEventLogger" />
+        <entry key="FATAL" value-ref="combinedEventLogger" />
     </util:map>
 
     <bean id="app" class="com.yet.spring.core.App">
@@ -37,10 +46,10 @@
             cacheFileEventLogger : consoleEventLogger }" />
         
         <constructor-arg ref="loggerMap"/>
-        
+
         <property name="startupMessage" value="#{'Hello user ' +
-            ( systemProperties['os.name'].contains('Windows') ? 
-                systemEnvironment['USERNAME'] : systemEnvironment['USER'] ) + 
+            ( systemProperties['os.name'].contains('Windows') ?
+                systemEnvironment['USERNAME'] : systemEnvironment['USER'] ) +
                 '. Default logger is ' + app.defaultLogger.name }"/>
     </bean>
 
